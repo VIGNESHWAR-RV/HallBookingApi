@@ -1,25 +1,20 @@
 import { client } from "./index.js";
 
 // function for reseting after customer's specified endTime
-export async function reset_After_End_Time(hall) {
+export async function reset_After_End_Time(hall,id) {
     return await client.db("userDB")
         .collection("Halls")
-        .updateOne({ name: hall.name },
-            [{ $set: { hallAvail: "Available" } },
-            {
-                $unset: ["customerName",
-                    "date",
-                    "startTime",
-                    "endTime"
-                ]
-            }]);
+        .updateOne(
+             { name: hall.name },
+             { $pull: {"customerId":id}}  // to pull specific customer from array
+             );
 }
 
    //function for checking all available halls
    export async function check_Available_Halls() {
     return await client.db("userDB")
         .collection("Halls")
-        .find({ hallAvail: "Available" })
+        .find({ customerId : {$exists:true,$e:[]}})  // {$exists:true,$e:[]} - check for empty array
         .toArray();
 }
 
@@ -27,7 +22,7 @@ export async function reset_After_End_Time(hall) {
 export async function getting_All_Booked_Halls() {
     return await client.db("userDB")
         .collection("Halls")
-        .find({ hallAvail: "Booked" })
+        .find({ customerId: {$exists:true,$ne:[]}}) // {$exists:true,$ne:[]} - check for non - empty array
         .toArray();
 }
 
@@ -46,7 +41,7 @@ export async function create_Hall(newHall) {
         .insertOne(newHall);
 }
 
-   //function to check if the hallName already exist
+   //function to check if the hallName already exist while creating hall
 export async function check_Existing_Hall_Name(newHall) {
     return await client.db("userDB")
         .collection("Halls")
@@ -55,29 +50,58 @@ export async function check_Existing_Hall_Name(newHall) {
 
   //function to book a hall
 export async function booking_Hall(hallName, customerDetails) {
-    return await client.db("userDB").collection("Halls")
-        .updateOne({ name: hallName.name },
-            {
-                $set: {
-                    hallAvail: "Booked",
-                    customerName: customerDetails.name,
-                    date: customerDetails.date,
-                    startTime: customerDetails.startTime,
-                    endTime: customerDetails.endTime
-                }
-            });
+
+    const customer = {
+        customerName: customerDetails.name,
+        hallName:hallName.name,
+        date: customerDetails.date,
+        startTime: customerDetails.startTime,
+        endTime: customerDetails.endTime}
+   
+
+
+      await client.db("userDB")
+                  .collection("hallUsers")
+                  .insertOne(customer);
+
+
+    const customerId = await client.db("userDB")
+                                   .collection("hallUsers")
+                                   .findOne(customer)
+                                   .porject({"_id": 1});
+
+    const updatingInHall = await client.db("userDB")
+                                       .collection("Halls")
+                                       .updateOne({name:hallName.name},
+                                               {$push:{customerId:customerId}}) //to push specific customerId to array
+    return updatingInHall;
 }
 
-//   //function to get current  booked customers 
-//   export async function booked_Customers() {
-//     return await client.db("userDB")
-//         .collection("Halls")
-//         .find({ hallAvail: "Booked" })
-//         .project({ _id: 0, customerName: 1, name: 1, date: 1, startTime: 1, endTime: 1 })
-//         .toArray();
-// }
+  //function to get current  booked customers 
+  export async function booked_Customers() {
 
-//  //function to get details of booked hall 
+  let booked_Customers = [];
+
+   const hall_Customers =  await client.db("userDB")
+                                         .collection("Halls")
+                                         .find({ customerId: {$exists:true,$ne:[]}})  //to find id of existing customers
+                                         .project({customerId: 1})
+                                         .toArray();
+
+   hall_Customers.forEach(async(hall)=>{
+       hall.forEach(async(id)=>{
+           const customer = await client.db("userDB")
+                                        .collection("hallUsers")
+                                        .findOne({_id:id});
+           booked_Customers.push(customer);
+       });
+   });
+
+   return booked_Customers;
+    
+}
+
+ //function to get details of booked hall 
 // export async function get_Details_Of_Booked_Hall(hallName) {
 //     return await client.db("userDB")
 //         .collection("Halls")

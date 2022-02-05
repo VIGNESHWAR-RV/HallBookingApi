@@ -1,7 +1,9 @@
 import express from "express";
+import { client } from "./index.js";
 import { check_Available_Halls,
          getting_All_Booked_Halls, 
          all_Halls,
+         booked_Customers,
          booking_Hall,
          check_Existing_Hall_Name, 
          create_Hall,
@@ -44,7 +46,7 @@ route.get("/customers", async (request, response) => {
 
     await check_For_Current_Time();
 
-    const currentCustomers = await getting_All_Booked_Halls();
+    const currentCustomers = await booked_Customers();
     return response.send(currentCustomers);
 
 
@@ -106,18 +108,27 @@ const check_For_Current_Time = async () => {
 
     if (BookedHalls) {
         BookedHalls.forEach(async (hall) => {
-            
-            const currentTimeStamp = Date.now();
-            const offset = (-330/30)*0.5;
-            const indianTimeStamp = currentTimeStamp - (offset*3600000);
 
-            const EndTime = Date.parse(hall.date + " " + hall.endTime);
+          const customerIds_Of_Each_Hall = hall.customerId;
 
-            if (+EndTime < +indianTimeStamp) {
-                const reset = await reset_After_End_Time(hall);
+             customerIds_Of_Each_Hall.forEach( async(id)=>{
 
-                return reset;
-            }
+                const customer = await client.db("userDB")
+                                             .collection("hallUsers")
+                                             .findOne({"_id":id});
+    
+                const currentTimeStamp = Date.now();
+                const offset = (-330/30)*0.5;
+                const indianCurrentTimeStamp = currentTimeStamp - (offset*3600000);
+    
+                const customerEndTimeStamp = Date.parse(customer.date + " " + customer.endTime);
+    
+                if (+customerEndTimeStamp < +indianCurrentTimeStamp) {
+                    const reset = await reset_After_End_Time(hall,id);
+    
+                    return reset;
+                }
+             });
         });
     }
 };
