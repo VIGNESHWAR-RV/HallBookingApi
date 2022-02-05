@@ -71,8 +71,12 @@ route.post("/bookHall/:name", async (request, response) => {
     const hallName = request.params;
     const customerDetails = request.body;
 
+    // server timezone = GMT 
+    // local timezone = IST
+    // local timeZone offset = -330 
+
     const currentTimeStamp = Date.now();
-    const offset = (new Date().getTimezoneOffset()/30)*0.5;
+    const offset = (-330/30)*0.5;
     const indianTimeStamp = currentTimeStamp - (offset*3600000);
     
 
@@ -102,8 +106,9 @@ const check_For_Current_Time = async () => {
 
     if (BookedHalls) {
         BookedHalls.forEach(async (hall) => {
+            
             const currentTimeStamp = Date.now();
-            const offset = (new Date().getTimezoneOffset()/30)*0.5;
+            const offset = (-330/30)*0.5;
             const indianTimeStamp = currentTimeStamp - (offset*3600000);
 
             const EndTime = Date.parse(hall.date + " " + hall.endTime);
