@@ -13,9 +13,9 @@ export async function reset_After_End_Time(hall,id) {
    //function for checking all available halls
    export async function check_Available_Halls() {
     return await client.db("userDB")
-        .collection("Halls")
-        .find({ customerId : {$exists:true,$e:[]}})  // {$exists:true,$e:[]} - check for empty array
-        .toArray();
+                       .collection("Halls")
+                       .find({ customerId : {$exists:true,$size:0}})  // {$exists:true,$e:[]} - check for empty array
+                       .toArray();
 }
 
  //function for getting details of all booked halls
