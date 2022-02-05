@@ -72,12 +72,16 @@ route.post("/bookHall/:name", async (request, response) => {
     const customerDetails = request.body;
 
     const currentTimeStamp = Date.now();
+    const offset = (new Date().getTimezoneOffset()/30)*0.5;
+    const indianTimeStamp = currentTimeStamp - (offset*3600000);
+    
+
 
     const startTime = Date.parse(customerDetails.date + " " + customerDetails.startTime);
     const endTime = Date.parse(customerDetails.date + " " + customerDetails.endTime);
 
 
-    if (+startTime > +currentTimeStamp && +endTime >= +startTime + 3600000) {
+    if (+startTime > +indianTimeStamp && +endTime >= +startTime + 3600000) {
 
         const booking = await booking_Hall(hallName, customerDetails);
 
@@ -98,10 +102,13 @@ const check_For_Current_Time = async () => {
 
     if (BookedHalls) {
         BookedHalls.forEach(async (hall) => {
-            const timeStamp = Date.now();
+            const currentTimeStamp = Date.now();
+            const offset = (new Date().getTimezoneOffset()/30)*0.5;
+            const indianTimeStamp = currentTimeStamp - (offset*3600000);
+
             const EndTime = Date.parse(hall.date + " " + hall.endTime);
 
-            if (+EndTime < +timeStamp) {
+            if (+EndTime < +indianTimeStamp) {
                 const reset = await reset_After_End_Time(hall);
 
                 return reset;

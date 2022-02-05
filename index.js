@@ -20,6 +20,12 @@ async function createConnection(){
 }
 export const client = await createConnection();
 
+// const time =  (Date.now());
+// const offset = (new Date().getTimezoneOffset()/30)*0.5;
+// const indianTime = time - (offset*3600000);
+// const currentTime = new Date(indianTime);
+// console.log(currentTime);
+
 
 
 app.use(express.json()); //middleware
