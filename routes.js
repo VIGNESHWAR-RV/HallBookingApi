@@ -140,7 +140,6 @@ route.post("/bookHall/:name", async (request, response) => {
     // for current indian  timeStamp
     const indianTimeStamp = conversion_Into_TimeStamp();
 
-    console.log(indianTimeStamp, startTimeStamp,endTimeStamp);
       //checking if the schedule is upComing time 
     if (+startTimeStamp > +indianTimeStamp) {
         
