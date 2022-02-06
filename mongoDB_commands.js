@@ -1,3 +1,5 @@
+import { response } from "express";
+import { ObjectId } from "mongodb";
 import { client } from "./index.js";
 
 // function for reseting after customer's specified endTime
@@ -6,7 +8,7 @@ export async function reset_After_End_Time(hall,id) {
         .collection("Halls")
         .updateOne(
              { name: hall.name },
-             { $pull: {"customerId":id}}  // to pull specific customer from array
+             { $pull: {customerId:id}}  // to pull specific customer from array
              );
 }
 
@@ -23,6 +25,7 @@ export async function getting_All_Booked_Halls() {
     return await client.db("userDB")
         .collection("Halls")
         .find({ customerId: {$exists:true,$ne:[]}}) // {$exists:true,$ne:[]} - check for non - empty array
+        .project({customerId: 1,name:1})
         .toArray();
 }
 
@@ -49,17 +52,9 @@ export async function check_Existing_Hall_Name(newHall) {
 }
 
   //function to book a hall
-export async function booking_Hall(hallName, customerDetails) {
+export async function booking_Hall( customer) {
 
-    const customer = {
-        customerName: customerDetails.name,
-        hallName:hallName.name,
-        date: customerDetails.date,
-        startTime: customerDetails.startTime,
-        endTime: customerDetails.endTime}
-   
-
-
+    
       await client.db("userDB")
                   .collection("hallUsers")
                   .insertOne(customer);
@@ -67,52 +62,55 @@ export async function booking_Hall(hallName, customerDetails) {
 
     const customerId = await client.db("userDB")
                                    .collection("hallUsers")
-                                   .findOne(customer)
-                                   .porject({"_id": 1});
+                                   .findOne(customer,
+                                           {projection:{"_id": 1}});
 
+    const customerStringId = customerId._id.toString();
     const updatingInHall = await client.db("userDB")
                                        .collection("Halls")
-                                       .updateOne({name:hallName.name},
-                                               {$push:{customerId:customerId}}) //to push specific customerId to array
+                                       .updateOne({name:customer.hallName},
+                                               {$push:{customerId:customerStringId}}) //to push specific customerId to array
     return updatingInHall;
 }
 
-  //function to get current  booked customers 
+  //function to get current  booked customers id
   export async function booked_Customers() {
 
-  let booked_Customers = [];
-
+  let booked_CustomersId = [];
    const hall_Customers =  await client.db("userDB")
-                                         .collection("Halls")
-                                         .find({ customerId: {$exists:true,$ne:[]}})  //to find id of existing customers
-                                         .project({customerId: 1})
-                                         .toArray();
+                                       .collection("Halls")
+                                       .find({ customerId: {$exists:true,$ne:[]}})  //to find id of existing customers
+                                       .project({_id: 0,customerId: 1})
+                                       .toArray();
 
-   hall_Customers.forEach(async(hall)=>{
-       hall.forEach(async(id)=>{
-           const customer = await client.db("userDB")
-                                        .collection("hallUsers")
-                                        .findOne({_id:id});
-           booked_Customers.push(customer);
-       });
-   });
-
-   return booked_Customers;
+      if(hall_Customers){
+            hall_Customers.forEach((hall)=>{     
+                hall.customerId.forEach((id)=>{
+                    booked_CustomersId.push(ObjectId(id)); 
+                });
+            });
+        }
+   return booked_CustomersId;
     
 }
+ // function to get customer details from customerId
+export async function current_Customers(currentCustomers) {
+    return await client.db("userDB")
+                       .collection("hallUsers")
+                       .find({ _id: { $in: currentCustomers } })
+                       .project({_id:0})
+                       .toArray();
+}
 
- //function to get details of booked hall 
-// export async function get_Details_Of_Booked_Hall(hallName) {
-//     return await client.db("userDB")
-//         .collection("Halls")
-//         .findOne({ name: hallName.name, hallAvail: "Booked" },
-//             {
-//                 projection: {
-//                     "_id": 0,
-//                     "customerName": 1,
-//                     "date": 1,
-//                     "startTime": 1,
-//                     "endTime": 1
-//                 }
-//             });
-// }
+ //function to get details of booking hall 
+export async function get_Details_Of_Booking_Hall(hallName) {
+    return await client.db("userDB")
+                       .collection("Halls")
+                       .findOne({ name: hallName.name },
+                           {
+                               projection: {
+                                   "_id": 0,
+                                   "customerId": 1
+                               }
+                           });
+}
