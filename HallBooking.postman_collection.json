@@ -1,0 +1,149 @@
+{
+	"info": {
+		"_postman_id": "f94b0aea-fa72-4695-ae9b-9ff2e744f98b",
+		"name": "HallBooking",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "createHall",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"name\":\"A1\",\r\n \"seatsAvailable\":100,\r\n \"amenities\":[\"Wifi\",\"Tech-Support\",\"Projection Screen\",\"Audio Equipments\",\"Air-Conditioned\",\"common Room\"],\r\n \"pricePerHour\":\"12\",\r\n \"customerID\":[]\r\n }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://hall-booking-api-by-rv.herokuapp.com/createHall",
+					"protocol": "https",
+					"host": [
+						"hall-booking-api-by-rv",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"createHall"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "availHalls",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://hall-booking-api-by-rv.herokuapp.com/",
+					"protocol": "https",
+					"host": [
+						"hall-booking-api-by-rv",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "allHalls",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://hall-booking-api-by-rv.herokuapp.com/allHalls",
+					"protocol": "https",
+					"host": [
+						"hall-booking-api-by-rv",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"allHalls"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "details of booking hall",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://hall-booking-api-by-rv.herokuapp.com/bookHall/A1",
+					"protocol": "https",
+					"host": [
+						"hall-booking-api-by-rv",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"bookHall",
+						"A1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "bookHall",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"name\":\"RV\",\r\n \"date\":\"2022-02-05\",\r\n \"startTime\":\"08:58:00\",\r\n \"endTime\":\"10:00:00\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://hall-booking-api-by-rv.herokuapp.com/bookHall/A1",
+					"protocol": "https",
+					"host": [
+						"hall-booking-api-by-rv",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"bookHall",
+						"A1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "customers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://hall-booking-api-by-rv.herokuapp.com/customers",
+					"protocol": "https",
+					"host": [
+						"hall-booking-api-by-rv",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"customers"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
