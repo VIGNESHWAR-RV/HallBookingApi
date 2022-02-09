@@ -7,7 +7,7 @@ export async function reset_After_End_Time(hall,id) {
     return await client.db("userDB")
         .collection("Halls")
         .updateOne(
-             { name: hall.name },
+             { name: hall },
              { $pull: {customerId:id}}  // to pull specific customer from array
              );
 }
