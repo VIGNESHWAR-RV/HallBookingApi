@@ -48,12 +48,16 @@ route.get("/", async (request, response) => {
 route.get("/bookHall/:name", async (request, response) => {
 
     const hallName = request.params;
-    const customers = await get_Details_Of_Booking_Hall(hallName);
+    
 
     const updation = await check_For_Current_Time();
 
-    if(updation && customers){
+    if(updation === "updated"){
+
+        const customers = await get_Details_Of_Booking_Hall(hallName);
+
          let customerIds = [];
+
 
          for(let customerId of customers.customerId){
               customerIds.push(ObjectId(customerId));
@@ -64,7 +68,7 @@ route.get("/bookHall/:name", async (request, response) => {
          
         const previousCustomers = await client.db("userDB")
                                               .collection("hallUsers")
-                                              .find({hallName:hallName,_id:{$nin:customerIds}})
+                                              .find({hallName:hallName.name,_id:{$not:{$in:customerIds}}})
                                               .toArray();
 
         return response.send({status:updation,result:{currentCustomers,previousCustomers}});
@@ -79,11 +83,12 @@ route.get("/allHalls", async (request, response) => {
 
     const updation = await check_For_Current_Time();
 
-    if(updation){
-    const allHalls = await all_Halls();
-    return response.send({status:updation,result:allHalls});
+    if(updation === "updated"){
+
+      const allHalls = await all_Halls();
+      return response.send({status:updation,result:allHalls});
     }
-    return response.status(500).send("server unavailable");
+    return response.status(500).send(updation);
 });
 
 //endPoint for Customers
@@ -91,16 +96,17 @@ route.get("/customers", async (request, response) => {
 
     const updation = await check_For_Current_Time();
 
-    const currentCustomers = await booked_Customers();
-
     
-    if(updation && currentCustomers){
-      const customers = await current_Customers(currentCustomers);
+    if(updation === "updated"){
+
+        const currentCustomers = await booked_Customers();  
+
+        const customers = await current_Customers(currentCustomers);
     
     return response.send({status:updation,result:customers});
     }
 
-    return response.status(500).send("server unavailable");
+    return response.status(500).send(updation);
 
 });
 
@@ -177,40 +183,68 @@ route.post("/bookHall/:name", async (request, response) => {
     return response.status(400).send("date or time not in the upComing days");
 });
 
+
+
 const check_For_Current_Time = async () => {
 
 
     const BookedHalls = await getting_All_Booked_Halls();
 
     if (BookedHalls) {
+        let currentCustomerIDs = [];
+        let customers;
 
-        BookedHalls.forEach(async(hall) => {
+        for(let hall of BookedHalls){
 
-              const customerIds_Of_Each_Hall = hall.customerId;
-      
-
-             customerIds_Of_Each_Hall.forEach( async(id)=>{
-
-                    const customer = await client.db("userDB")
-                                                 .collection("hallUsers")
-                                                 .findOne({"_id":ObjectId(id)});
+            const customerIds_Of_Each_Hall = hall.customerId;
     
-                if(customer){
+             for(let id of customerIds_Of_Each_Hall){
+                    
+                currentCustomerIDs.push(ObjectId(id));
+                    
+           };
+        };
 
-                    const indianCurrentTimeStamp = conversion_Into_TimeStamp();
+        if(currentCustomerIDs.length !== 0){
+
+             customers = await client.db("userDB")
+                                         .collection("hallUsers")
+                                         .find({"_id":{$in:currentCustomerIDs}})
+                                         .toArray();
+
+        };
+
+        if(customers){
+
+            let updation;
+            for(let customer of customers){
         
-                    const customerEndTimeStamp = conversion_Into_TimeStamp(customer.date,customer.endTime);
+                const indianCurrentTimeStamp = conversion_Into_TimeStamp();
+    
+                const customerEndTimeStamp = conversion_Into_TimeStamp(customer.date,customer.endTime);
 
-                    if (+customerEndTimeStamp < +indianCurrentTimeStamp) {
-                           await reset_After_End_Time(hall,id);
+                if (+customerEndTimeStamp < +indianCurrentTimeStamp) {
+                 
+                    const reset =   await reset_After_End_Time(customer.hallName,customer._id.toString());
+
+                    if(reset){
+                        updation = true;
                     }
-                 }
-           });
-        });
-    }
-    return "updated";
-};
+                }else{
+                    updation = true;
+                }
+            };
+            if(updation){
+                return "updated";
+            }
+        }else{
+            return "updated";
+        }
 
+    }else{
+        return "couldn't get the booked halls";
+    }
+};
 
  function existing_Date_Time_Check(existingCustomerOnDate, startTimeStamp, endTimeStamp) {
 
