@@ -10,12 +10,15 @@ import { check_Available_Halls,
          booking_Hall,
          check_Existing_Hall_Name, 
          create_Hall,
-         reset_After_End_Time } from "./mongoDB_commands.js";
+         reset_After_End_Time,
+         delete_Old_Date } from "./mongoDB_commands.js";
 
 const route = express.Router();
 
 function conversion_Into_TimeStamp(date=0,time=0){
     
+
+
     const offset = (-330/30)*0.5;
     let Time;
     if(date===0 && time===0){
@@ -59,19 +62,21 @@ route.get("/bookHall/:name", async (request, response) => {
          let customerIds = [];
 
 
-         for(let customerId of customers.customerId){
+         for(let customer of customers.customers){
+             for(let customerId of customer.customerId){
               customerIds.push(ObjectId(customerId));
+             }
          }
 
          
-         const currentCustomers = await current_Customers(customerIds);
+         const bookedCustomers = await current_Customers(customerIds);
          
         const previousCustomers = await client.db("userDB")
                                               .collection("hallUsers")
                                               .find({hallName:hallName.name,_id:{$not:{$in:customerIds}}})
                                               .toArray();
 
-        return response.send({status:updation,result:{currentCustomers,previousCustomers}});
+        return response.send({status:updation,result:{bookedCustomers,previousCustomers}});
     }
 
     
@@ -171,9 +176,10 @@ route.post("/bookHall/:name", async (request, response) => {
             }
         
         }
-    
+        
         const customer = {...customerDetails, hallName:hallName.name};
-        const booking = await booking_Hall(customer);
+        const date_Deadline = conversion_Into_TimeStamp(customerDetails.date,"23:59:59"); 
+        const booking = await booking_Hall(customer,date_Deadline);
 
         return response.send(booking);
     }
@@ -183,34 +189,38 @@ route.post("/bookHall/:name", async (request, response) => {
     return response.status(400).send("date or time not in the upComing days");
 });
 
-
+let date = "2022-02-12";
 
 const check_For_Current_Time = async () => {
 
+    const indianCurrentTimeStamp = conversion_Into_TimeStamp();
+    const today = new Date(indianCurrentTimeStamp).toISOString().split("T")[0];
+   
+    if(date !== today){
 
-    const BookedHalls = await getting_All_Booked_Halls();
+    const date_Deadline = conversion_Into_TimeStamp(today,"00:00:00"); 
+    await delete_Old_Date(date_Deadline);
+    date=today;
+    }
+    const BookedHalls = await getting_All_Booked_Halls(today);  
 
     if (BookedHalls) {
+
         let currentCustomerIDs = [];
         let customers;
-
-        for(let hall of BookedHalls){
-
-            const customerIds_Of_Each_Hall = hall.customerId;
-    
-             for(let id of customerIds_Of_Each_Hall){
-                    
-                currentCustomerIDs.push(ObjectId(id));
-                    
+        for(let hall of BookedHalls){   //for each hall of booked halls on today
+            
+            for(let customers_Of_Today of hall.customers){   //for customers of each hall
+               
+                   for(let id of customers_Of_Today.customerId){
+                   
+                         currentCustomerIDs.push(ObjectId(id));
+                    };   
            };
         };
-
         if(currentCustomerIDs.length !== 0){
-
-             customers = await client.db("userDB")
-                                         .collection("hallUsers")
-                                         .find({"_id":{$in:currentCustomerIDs}})
-                                         .toArray();
+            
+             customers = await current_Customers(currentCustomerIDs)
 
         };
 
@@ -224,10 +234,11 @@ const check_For_Current_Time = async () => {
                 const customerEndTimeStamp = conversion_Into_TimeStamp(customer.date,customer.endTime);
 
                 if (+customerEndTimeStamp < +indianCurrentTimeStamp) {
-                 
-                    const reset =   await reset_After_End_Time(customer.hallName,customer._id.toString());
+
+                    const reset =   await reset_After_End_Time(customer.hallName,today,customer._id.toString());
 
                     if(reset){
+
                         updation = true;
                     }
                 }else{
