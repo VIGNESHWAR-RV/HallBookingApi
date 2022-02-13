@@ -20,6 +20,7 @@ async function createConnection(){
 }
 export const client = await createConnection();
 
+//for getting time with indian time stamp
 // const time =  (Date.now());
 // const offset = (new Date().getTimezoneOffset()/30)*0.5;
 // const indianTime = time - (offset*3600000);

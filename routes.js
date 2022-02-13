@@ -190,17 +190,16 @@ route.post("/bookHall/:name", async (request, response) => {
     return response.status(400).send("date or time not in the upComing days");
 });
 
-let date = "2022-02-12";
+let date = "";
 
 const check_For_Current_Time = async () => {
 
     const indianCurrentTimeStamp = conversion_Into_TimeStamp();
     const today = new Date(indianCurrentTimeStamp).toISOString().split("T")[0];
-    console.log(new Date(indianCurrentTimeStamp));
+  
     if(date !== today){
-
-    const date_Deadline = conversion_Into_TimeStamp(today,"00:00:00"); 
-    await delete_Old_Date(date_Deadline);
+      const date_Deadline = conversion_Into_TimeStamp(today,"00:00:00"); 
+       await delete_Old_Date(date_Deadline);
     date=today;
     }
     const BookedHalls = await getting_All_Booked_Halls(today);  
@@ -233,7 +232,7 @@ const check_For_Current_Time = async () => {
                 const indianCurrentTimeStamp = conversion_Into_TimeStamp();
     
                 const customerEndTimeStamp = conversion_Into_TimeStamp(customer.date,customer.endTime);
-                console.log(new Date(customerEndTimeStamp));
+        
                 if (+customerEndTimeStamp < +indianCurrentTimeStamp) {
                    
                     const reset =   await reset_After_End_Time(customer.hallName,today,customer._id.toString());
