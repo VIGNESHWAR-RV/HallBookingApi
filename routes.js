@@ -232,7 +232,7 @@ const check_For_Current_Time = async () => {
                 const indianCurrentTimeStamp = conversion_Into_TimeStamp();
     
                 const customerEndTimeStamp = conversion_Into_TimeStamp(customer.date,customer.endTime);
-               
+                console.log(new Date(customerEndTimeStamp));
                 if (+customerEndTimeStamp < +indianCurrentTimeStamp) {
                    
                     const reset =   await reset_After_End_Time(customer.hallName,today,customer._id.toString());
