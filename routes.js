@@ -26,6 +26,7 @@ function conversion_Into_TimeStamp(date=0,time=0){
    
     }else{
         Time = Date.parse(date + " " + time);
+        return Time;
     }
     const timeStamp = Time - (offset*3600000);
     return timeStamp;
