@@ -27,7 +27,7 @@ export const client = await createConnection();
 // const currentTime = new Date(indianTime);
 // console.log(currentTime.toISOString().split("T")[0]);
 //console.log(Date.parse("2022-02-12 23:59:59"),(Date.parse("2022-02-13 00:00:00")));
-
+//console.log(new Date("2022-02-13 00:00:00"),new Date("2022-02-13"));
 
 app.use(express.json()); //middleware
 app.use(cors());

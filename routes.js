@@ -24,8 +24,9 @@ function conversion_Into_TimeStamp(date=0,time=0){
     if(date===0 && time===0){
        Time = Date.now();
    
-    }else{
-        Time = Date.parse(date + " " + time);
+    }
+    else{
+        Time = Date.parse((time!==0)? (date +  " " + time) : (date) );
         return Time;
     }
     const timeStamp = Time - (offset*3600000);
@@ -198,9 +199,9 @@ const check_For_Current_Time = async () => {
     const today = new Date(indianCurrentTimeStamp).toISOString().split("T")[0];
   
     if(date !== today){
-      const date_Deadline = conversion_Into_TimeStamp(today,"00:00:00"); 
+      const date_Deadline = conversion_Into_TimeStamp(today); 
        await delete_Old_Date(date_Deadline);
-    date=today;
+       date=today;
     }
     const BookedHalls = await getting_All_Booked_Halls(today);  
 
