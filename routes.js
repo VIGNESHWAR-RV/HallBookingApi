@@ -267,14 +267,20 @@ const check_For_Current_Time = async () => {
         const existingCustomerEndingTimeStamp = conversion_Into_TimeStamp(customer.date,customer.endTime);
  
         if((startTimeStamp >= existingCustomerStartingTimeStamp
-                               &&
+                               &&                                 //not booking when start-time is between the registered schedules
             startTimeStamp <= existingCustomerEndingTimeStamp)
             
                                 ||
     
             (endTimeStamp >= existingCustomerStartingTimeStamp
-                                &&
-             endTimeStamp <= existingCustomerEndingTimeStamp)){
+                                &&                                //not booking when end-time is between the  registered schedules
+             endTimeStamp <= existingCustomerEndingTimeStamp)
+             
+                                 ||
+
+            (startTimeStamp < existingCustomerStartingTimeStamp
+                                 &&                               //not booking when the schedule covers the already registered schedule
+             endTimeStamp   > existingCustomerEndingTimeStamp)){
 
             return "yes";
 
