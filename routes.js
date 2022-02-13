@@ -195,7 +195,7 @@ const check_For_Current_Time = async () => {
 
     const indianCurrentTimeStamp = conversion_Into_TimeStamp();
     const today = new Date(indianCurrentTimeStamp).toISOString().split("T")[0];
-   
+    console.log(new Date(indianCurrentTimeStamp));
     if(date !== today){
 
     const date_Deadline = conversion_Into_TimeStamp(today,"00:00:00"); 
@@ -232,9 +232,9 @@ const check_For_Current_Time = async () => {
                 const indianCurrentTimeStamp = conversion_Into_TimeStamp();
     
                 const customerEndTimeStamp = conversion_Into_TimeStamp(customer.date,customer.endTime);
-
+               
                 if (+customerEndTimeStamp < +indianCurrentTimeStamp) {
-
+                   
                     const reset =   await reset_After_End_Time(customer.hallName,today,customer._id.toString());
 
                     if(reset){
