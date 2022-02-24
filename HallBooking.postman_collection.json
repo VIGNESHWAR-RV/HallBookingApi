@@ -98,11 +98,11 @@
 		{
 			"name": "bookHall",
 			"request": {
-				"method": "POST",
+				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n \"name\":\"RV\",\r\n \"date\":\"2022-02-05\",\r\n \"startTime\":\"08:58:00\",\r\n \"endTime\":\"10:00:00\"\r\n}",
+					"raw": "{\r\n \"name\":\"RV\",\r\n \"date\":\"2022-02-07\",\r\n \"startTime\":\"01:00:00\",\r\n \"endTime\":\"02:00:00\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
