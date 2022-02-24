@@ -134,7 +134,7 @@ route.post("/createHall", async (request, response) => {
 });
 
 //endPoint for Booking Halls
-route.post("/bookHall/:name", async (request, response) => {
+route.put("/bookHall/:name", async (request, response) => {
     const hallName = request.params;
     const customerDetails = request.body;
 
